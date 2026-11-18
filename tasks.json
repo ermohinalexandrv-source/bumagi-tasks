@@ -54,11 +54,11 @@
    "col": "maxim",
    "title": "Код ревью текущего решения",
    "desc": "Посмотреть весь пайплайн обработки",
-   "deadline": "",
+   "deadline": "2026-11-23",
    "checklist": [],
-   "hot": false,
+   "hot": true,
    "co": [],
-   "updatedAt": 1795037184886,
+   "updatedAt": 1795037200783,
    "done": false,
    "createdAt": 1795037184889
   }
