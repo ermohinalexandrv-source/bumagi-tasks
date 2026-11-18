@@ -36,6 +36,18 @@
    "updatedAt": 1795035782334,
    "done": false,
    "createdAt": 1795035783880
+  },
+  "mwmm4homhfe19n": {
+   "col": "maxim",
+   "title": "Посмотреть документацию API DeepSeek, по работе с web, чтобы подтягивать законы с поиска моделью",
+   "desc": "",
+   "deadline": "",
+   "checklist": [],
+   "hot": false,
+   "co": [],
+   "updatedAt": 1795036061830,
+   "done": false,
+   "createdAt": 1795036061833
   }
  }
 }
