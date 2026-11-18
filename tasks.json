@@ -8,14 +8,14 @@
    "checklist": [
     {
      "t": "проверка",
-     "done": true
+     "done": false
     },
     {
      "t": "проверка 1",
      "done": false
     }
    ],
-   "updatedAt": 1795034852883,
+   "updatedAt": 1795034854398,
    "done": false,
    "createdAt": 1795034839043
   }
