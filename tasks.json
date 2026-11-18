@@ -1,14 +1,3 @@
 {
- "tasks": {
-  "mwmlhjwmkkmr9g": {
-   "col": "sasha",
-   "title": "Убрать приписку Господин",
-   "desc": "",
-   "deadline": "2026-11-18",
-   "checklist": [],
-   "updatedAt": 1795034991622,
-   "done": false,
-   "createdAt": 1795034995469
-  }
- }
+ "tasks": {}
 }
