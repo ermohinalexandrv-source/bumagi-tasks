@@ -10,6 +10,17 @@
    "updatedAt": 1795035508453,
    "done": false,
    "createdAt": 1795035508460
+  },
+  "mwmlto2ze6cgbu": {
+   "col": "egor",
+   "title": "Запросить КП по API от ГАРАНТА",
+   "desc": "Ожидаю мини-запрос от Максима",
+   "deadline": "2026-11-19",
+   "checklist": [],
+   "hot": false,
+   "updatedAt": 1795035556907,
+   "done": false,
+   "createdAt": 1795035556910
   }
  }
 }
