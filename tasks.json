@@ -49,6 +49,18 @@
    "done": false,
    "createdAt": 1795036061833,
    "pinned": true
+  },
+  "mwmmsk8mv40d9y": {
+   "col": "maxim",
+   "title": "Код ревью текущего решения",
+   "desc": "Посмотреть весь пайплайн обработки",
+   "deadline": "",
+   "checklist": [],
+   "hot": false,
+   "co": [],
+   "updatedAt": 1795037184886,
+   "done": false,
+   "createdAt": 1795037184889
   }
  },
  "notes": {
