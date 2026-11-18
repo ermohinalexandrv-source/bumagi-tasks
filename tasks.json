@@ -19,9 +19,12 @@
    "deadline": "2026-11-19",
    "checklist": [],
    "hot": false,
-   "updatedAt": 1795035586471,
+   "updatedAt": 1795036014711,
    "done": false,
-   "createdAt": 1795035556910
+   "createdAt": 1795035556910,
+   "co": [
+    "maxim"
+   ]
   },
   "mwmlyi0uol0bh1": {
    "col": "egor",
