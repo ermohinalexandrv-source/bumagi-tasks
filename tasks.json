@@ -1,24 +1,5 @@
 {
  "tasks": {
-  "mwmlea673ez4vt": {
-   "col": "egor",
-   "title": "Тест",
-   "desc": "Тестированное задание чисто проверить",
-   "deadline": "",
-   "checklist": [
-    {
-     "t": "проверка",
-     "done": true
-    },
-    {
-     "t": "проверка 1",
-     "done": true
-    }
-   ],
-   "updatedAt": 1795034991317,
-   "done": true,
-   "createdAt": 1795034839043
-  },
   "mwmlhjwmkkmr9g": {
    "col": "sasha",
    "title": "Убрать приписку Господин",
