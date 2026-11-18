@@ -151,7 +151,32 @@
   .task:hover .tdel{opacity:.8}
   .tdel:hover{background:var(--soft);opacity:1;color:var(--stamp)}
   .tdel.sure{opacity:1;width:auto;padding:0 10px;background:var(--stamp);color:#fff}
-  .task .trow{padding-right:26px}
+  .task .trow{padding-right:58px}
+  .tpin{position:absolute;top:10px;right:42px;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;color:var(--muted);opacity:.35;transition:.15s}
+  .tpin svg{width:15px;height:15px}
+  .task:hover .tpin{opacity:.8}
+  .tpin:hover{background:var(--soft);opacity:1;color:var(--ink)}
+  .tpin.on{opacity:1;color:var(--stamp)}
+  .tpin.on svg{fill:currentColor}
+  .tdel.sure ~ .tpin, .task:has(.tdel.sure) .tpin{display:none}
+  .task.pinned:not(.done){outline:1.5px solid rgba(210,69,43,.28);outline-offset:-1.5px}
+  .ghead.pin{color:var(--stamp)}
+  .ghead.help{color:var(--ink-2)}
+  .people{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:var(--muted)}
+  .people .stack2{display:inline-flex}
+  .mava{width:22px;height:22px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-weight:900;font-size:11px;border:2px solid #fff;margin-left:-6px}
+  .mava:first-child{margin-left:0}
+  .task.helping{background:rgba(255,255,255,.78)}
+  .chip.owner{background:rgba(91,107,140,.14);color:var(--ink)}
+  .cos{display:flex;gap:8px;flex-wrap:wrap}
+  .cos button{display:inline-flex;align-items:center;gap:7px;background:var(--paper-2);border-radius:999px;padding:6px 12px 6px 6px;font-weight:800;font-size:14px;color:var(--muted)}
+  .cos button .mava{border:0;width:24px;height:24px;opacity:.5}
+  .cos button.on{background:var(--ink);color:#fff}
+  .cos button.on .mava{opacity:1;box-shadow:0 0 0 2px #fff}
+  .cos .hint{font-size:13px;font-weight:700;color:var(--muted);padding:6px 0}
+  .ro .tpin:not(.on){display:none}
+  .ro .tpin{pointer-events:none}
+  @media (hover:none){ .tpin{opacity:.6} }
   .ro .tdel,.ro .nadd,.ro .ntask,.ro .add-note{display:none}
   /* toggle row in modal */
   .hotrow{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:800;font-size:16px;cursor:pointer}
@@ -258,6 +283,7 @@
     <h2 id="mTitle">Новая задача</h2>
     <div class="grp">
       <div class="fld" id="mColFld"><span class="lbl">Чья задача</span><div class="seg" id="mCol"></div></div>
+      <div class="fld"><span class="lbl">Соисполнители</span><div class="cos" id="mCo"></div></div>
       <div class="fld"><label class="lbl" for="mName">Задача</label><input class="inp" id="mName" maxlength="200" placeholder="Что нужно сделать"></div>
       <div class="fld"><label class="lbl" for="mDesc">Описание</label><textarea class="inp" id="mDesc" maxlength="4000" placeholder="Подробности, ссылки, контекст"></textarea></div>
       <div class="fld"><div class="hotrow" id="mHot" role="switch" tabindex="0"><span>🔥 Важная задача</span><span class="sw"></span></div></div>
@@ -328,6 +354,7 @@ const COLS = [
 ];
 const COL_IDS = COLS.map(c => c.id);
 const TRASH = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h11M6 4V2.8h4V4M4 4l.7 9.2h6.6L12 4"/></svg>';
+const PIN = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M6 2h4l-.6 4 2.6 2.4H4L6.6 6z"/><path d="M8 8.4V14"/></svg>';
 const KINDS = { threat: { icon: '⚠️', name: 'Угроза' }, idea: { icon: '💡', name: 'Предложение' }, note: { icon: '•', name: 'Пункт' } };
 const KIND_ORDER = ['threat', 'idea', 'note'];
 const CHECK = '<svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.3l2.3 2.3 4.7-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -359,6 +386,8 @@ function clean(raw, id) {
     checklist: list,
     done: !!d.done,
     hot: !!d.hot,
+    pinned: !!d.pinned,
+    co: Array.isArray(d.co) ? [...new Set(d.co.filter(x => COL_IDS.includes(x) && x !== d.col))] : [],
     createdAt: Number(d.createdAt) || 0,
   };
 }
@@ -512,6 +541,7 @@ async function refresh(force) {
 /* ---------- render ---------- */
 function sortTasks(a, b) {
   if (a.done !== b.done) return a.done ? 1 : -1;
+  if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
   if (a.hot !== b.hot) return a.hot ? -1 : 1;
   if (a.deadline !== b.deadline) { if (!a.deadline) return 1; if (!b.deadline) return -1; return a.deadline < b.deadline ? -1 : 1; }
   return a.createdAt - b.createdAt;
@@ -557,7 +587,10 @@ function render() {
   const scroll = board.scrollLeft;
   board.replaceChildren();
   COLS.forEach(c => {
+    const pinnedTop = all.filter(t => t.col === c.id && t.pinned && !t.done).sort(sortTasks);
     const mine = all.filter(t => t.col === c.id && (monthSel === 'all' || monthKey(t) === monthSel)).sort(sortTasks);
+    const rest = mine.filter(t => !(t.pinned && !t.done));
+    const helping = all.filter(t => t.co.includes(c.id) && (monthSel === 'all' || monthKey(t) === monthSel) && !(hideDone && t.done)).sort(sortTasks);
     const d = mine.filter(t => t.done).length;
     const col = h('section', 'col');
     const head = h('div', 'colhead');
@@ -571,15 +604,23 @@ function render() {
     const list = h('div', 'list');
     if (!loaded && !all.length) { list.append(h('div', 'sk'), h('div', 'sk')); }
     else {
-      const shown = hideDone ? mine.filter(t => !t.done) : mine;
-      if (!shown.length) list.append(h('div', 'empty', mine.length ? 'Всё выполнено' : 'Пока пусто'));
+      const shown = hideDone ? rest.filter(t => !t.done) : rest;
+      if (pinnedTop.length) {
+        list.append(h('div', 'ghead pin', '📌 Закреплено'));
+        pinnedTop.forEach(t => list.append(card(t)));
+      }
+      if (!shown.length && !pinnedTop.length && !helping.length) list.append(h('div', 'empty', mine.length ? 'Всё выполнено' : 'Пока пусто'));
       if (monthSel === 'all') {
         const groups = [...new Set(shown.map(monthKey))].sort(sortMonths);
         groups.forEach(g => {
-          if (groups.length > 1 || g !== 'none') list.append(h('div', 'ghead', monthLabel(g)));
+          if (groups.length > 1 || g !== 'none' || pinnedTop.length) list.append(h('div', 'ghead', monthLabel(g)));
           shown.filter(t => monthKey(t) === g).forEach(t => list.append(card(t)));
         });
       } else shown.forEach(t => list.append(card(t)));
+      if (helping.length) {
+        list.append(h('div', 'ghead help', '🤝 Соисполнитель'));
+        helping.forEach(t => list.append(card(t, c.id)));
+      }
     }
     col.append(head, cb, add, list);
     board.append(col);
@@ -627,8 +668,9 @@ function renderNotes() {
   });
 }
 
-function card(t) {
-  const el = h('article', 'task' + (t.done ? ' done' : '') + (t.hot ? ' hot' : ''));
+function mava(id) { const c = COLS.find(x => x.id === id); const a = h('span', 'mava', c.name[0]); a.style.background = c.tone; a.title = c.name; return a; }
+function card(t, helpingIn) {
+  const el = h('article', 'task' + (t.done ? ' done' : '') + (t.hot ? ' hot' : '') + (t.pinned && !helpingIn ? ' pinned' : '') + (helpingIn ? ' helping' : ''));
   el.onclick = () => openModal(t.id);
   const row = h('div', 'trow');
   const chk = h('button', 'chk' + (t.done ? ' on' : '')); chk.innerHTML = CHECK;
@@ -640,6 +682,10 @@ function card(t) {
   row.append(chk, ttl);
   el.append(row);
   el.append(delButton(() => mutate(d => { delete d.tasks[t.id]; }, 'Удалено: ' + t.title)));
+  const pin = h('button', 'tpin' + (t.pinned ? ' on' : '')); pin.type = 'button'; pin.innerHTML = PIN;
+  pin.title = t.pinned ? 'Открепить' : 'Закрепить вверху'; pin.setAttribute('aria-label', pin.title);
+  pin.onclick = e => { e.stopPropagation(); togglePin(t.id); };
+  el.append(pin);
   if (t.desc) el.append(h('div', 'desc', t.desc));
   if (t.checklist.length) {
     const items = h('div', 'items');
@@ -663,6 +709,15 @@ function card(t) {
     foot.append(h('span', cls, txt));
   }
   if (t.checklist.length) foot.append(h('span', 'chip', t.checklist.filter(i => i.done).length + '/' + t.checklist.length + ' пунктов'));
+  if (helpingIn) {
+    const o = COLS.find(x => x.id === t.col);
+    foot.append(h('span', 'chip owner', 'Ответственный: ' + o.name));
+  } else if (t.co.length) {
+    const p = h('span', 'people'); const st = h('span', 'stack2');
+    t.co.forEach(id => st.append(mava(id)));
+    p.append(st, document.createTextNode('+ ' + t.co.map(id => COLS.find(x => x.id === id).name).join(', ')));
+    foot.append(p);
+  }
   if (foot.childNodes.length) el.append(foot);
   if (t.done) el.append(h('div', 'stampmark', 'выполнено'));
   return el;
@@ -676,6 +731,11 @@ function toggleItem(id, idx) {
     const t = d.tasks[id]; if (!t || !Array.isArray(t.checklist) || !t.checklist[idx]) return;
     t.checklist[idx].done = want; t.done = allDone(t.checklist); t.updatedAt = Date.now();
   }, 'Чек-лист: ' + cur.title);
+}
+function togglePin(id) {
+  const cur = tasks.get(id); if (!cur) return;
+  const want = !cur.pinned;
+  mutate(d => { const t = d.tasks[id]; if (t) { t.pinned = want; t.updatedAt = Date.now(); } }, (want ? 'Закреплено: ' : 'Откреплено: ') + cur.title);
 }
 function toggleTask(id) {
   const cur = tasks.get(id); if (!cur) return;
@@ -693,7 +753,7 @@ function openModal(id, col, prefill) {
   if (!id && !token) { openLogin(); return; }
   if (!id && !canWrite) return;
   const t = id ? tasks.get(id) : null;
-  edit = { id: id || null, col: t ? t.col : (col || 'sasha'), list: t ? t.checklist.map(x => ({ ...x })) : [], hot: t ? t.hot : false };
+  edit = { id: id || null, col: t ? t.col : (col || 'sasha'), list: t ? t.checklist.map(x => ({ ...x })) : [], hot: t ? t.hot : false, co: t ? [...t.co] : [] };
   const who = COLS.find(c => c.id === edit.col);
   // a task added from a person's column belongs to that person — no need to choose
   $('mColFld').style.display = (!t && col) ? 'none' : '';
@@ -707,7 +767,7 @@ function openModal(id, col, prefill) {
   $('mSave').style.display = canWrite ? '' : 'none';
   $('mCancel').textContent = canWrite ? 'Отмена' : 'Закрыть';
   [$('mName'), $('mDesc'), $('mDate'), $('mNew')].forEach(i => i.disabled = !canWrite);
-  drawSeg(); drawList(); drawHot();
+  drawSeg(); drawCo(); drawList(); drawHot();
   $('ov').classList.add('on');
   if (!t && canWrite) setTimeout(() => $('mName').focus(), 50);
 }
@@ -721,8 +781,18 @@ function drawSeg() {
   COLS.forEach(c => {
     const b = h('button', c.id === edit.col ? 'on' : '', c.name); b.type = 'button';
     b.disabled = !canWrite;
-    b.onclick = () => { edit.col = c.id; drawSeg(); };
+    b.onclick = () => { edit.col = c.id; edit.co = edit.co.filter(x => x !== c.id); drawSeg(); drawCo(); };
     s.append(b);
+  });
+}
+function drawCo() {
+  const box = $('mCo'); box.replaceChildren();
+  COLS.filter(c => c.id !== edit.col).forEach(c => {
+    const on = edit.co.includes(c.id);
+    const b = h('button', on ? 'on' : ''); b.type = 'button'; b.disabled = !canWrite;
+    b.append(mava(c.id), document.createTextNode(c.name));
+    b.onclick = () => { edit.co = on ? edit.co.filter(x => x !== c.id) : edit.co.concat(c.id); drawCo(); };
+    box.append(b);
   });
 }
 function drawList() {
@@ -755,7 +825,7 @@ $('mSave').onclick = () => {
   const title = $('mName').value.trim();
   if (!title) { $('mName').focus(); toast('Напишите название задачи'); return; }
   const list = edit.list.map(x => ({ t: x.t.trim(), done: !!x.done })).filter(x => x.t);
-  const fields = { col: edit.col, title, desc: $('mDesc').value.trim(), deadline: $('mDate').value || '', checklist: list, hot: !!edit.hot, updatedAt: Date.now() };
+  const fields = { col: edit.col, title, desc: $('mDesc').value.trim(), deadline: $('mDate').value || '', checklist: list, hot: !!edit.hot, co: edit.co.filter(x => x !== edit.col), updatedAt: Date.now() };
   const id = edit.id;
   if (id) {
     mutate(d => {
