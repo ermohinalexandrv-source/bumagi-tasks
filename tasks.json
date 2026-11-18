@@ -45,9 +45,10 @@
    "checklist": [],
    "hot": true,
    "co": [],
-   "updatedAt": 1795036082820,
+   "updatedAt": 1795036099188,
    "done": false,
-   "createdAt": 1795036061833
+   "createdAt": 1795036061833,
+   "pinned": true
   }
  }
 }
