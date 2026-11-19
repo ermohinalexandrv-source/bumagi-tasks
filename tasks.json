@@ -107,9 +107,10 @@
    "checklist": [],
    "hot": false,
    "co": [],
-   "updatedAt": 1795103756095,
+   "updatedAt": 1795103789493,
    "done": false,
-   "createdAt": 1795103756107
+   "createdAt": 1795103756107,
+   "pinned": true
   }
  },
  "notes": {
