@@ -71,9 +71,10 @@
    "checklist": [],
    "hot": false,
    "co": [],
-   "updatedAt": 1795101061898,
+   "updatedAt": 1795172978728,
    "done": false,
-   "createdAt": 1795101061903
+   "createdAt": 1795101061903,
+   "pinned": true
   },
   "mwnpaf3puwztev": {
    "col": "egor",
